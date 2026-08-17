@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Regulatory Document Q&A</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; background: #fafafa; }
+        h1 { font-size: 20px; }
+        input { width: 100%; padding: 10px; font-size: 14px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
+        button { padding: 10px 20px; margin-top: 10px; font-size: 14px; cursor: pointer; background: #2563eb; color: white; border: none; border-radius: 6px; }
+        button:disabled { background: #999; cursor: not-allowed; }
+        .result { margin-top: 20px; padding: 15px; background: white; border-radius: 6px; border: 1px solid #ddd; }
+        .citation { color: #666; font-size: 13px; margin-top: 10px; }
+        .not-found { color: #b00020; }
+    </style>
+    
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function App() {
+            const [question, setQuestion] = useState("");
+            const [result, setResult] = useState(null);
+            const [loading, setLoading] = useState(false);
+
+            async function handleAsk() {
+                if (!question.trim()) return;
+                setLoading(true);
+                setResult(null);
+
+                try {
+                    const response = await fetch("http://localhost:5000/ask", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ question: question })
+                    });
+                    const data = await response.json();
+                    setResult(data);
+                } catch (error) {
+                    setResult({ answer: "Error connecting to backend. Make sure app.py is running.", citation: null });
+                }
+
+                setLoading(false);
+            }
+
+            return (
+                <div>
+                    <h1>Ask a question about import-export regulations</h1>
+                    <input
+                        type="text"
+                        value={question}
+                        onChange={(e) => setQuestion(e.target.value)}
+                        placeholder="e.g. What is the import duty rate for electronics?"
+                    />
+                    <br />
+                    <button onClick={handleAsk} disabled={loading}>
+                        {loading ? "Thinking..." : "Ask"}
+                    </button>
+
+                    {result && (
+                        <div className="result">
+                            <div className={result.citation ? "" : "not-found"}>
+                                {result.answer}
+                            </div>
+                            {result.citation && (
+                                <div className="citation">
+                                    Source: {result.citation} (confidence: {result.confidence_score})
+                                </div>
+                            )}
+                            {!result.citation && result.confidence_score !== undefined && (
+                                <div className="citation">
+                                    (best match confidence was only {result.confidence_score}, below threshold)
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+</body>
+</html>
