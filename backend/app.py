@@ -5,15 +5,14 @@ import os
 
 # To use a real AI model, install: pip install google-generativeai
 # Get a free key at https://aistudio.google.com/app/apikey
-USE_AI_MODEL = True
+USE_AI_MODEL = os.environ.get("USE_AI_MODEL", "true").lower() != "false"
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 if USE_AI_MODEL:
     if not GEMINI_API_KEY:
-        raise RuntimeError("Set GEMINI_API_KEY environment variable before running.")
+        raise RuntimeError("Set GEMINI_API_KEY environment variable before running, or set USE_AI_MODEL=false to run in demo mode.")
     import google.generativeai as genai
     genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel("gemini-2.5-flash")
 
 
 app = Flask(__name__)

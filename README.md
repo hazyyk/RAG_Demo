@@ -70,14 +70,6 @@ running first.
 
 ## Results
 
-Tested on 15 questions against the live `retrieve_best_match()` function:
-**9 correctly matched with citation, 4 correctly abstained, 2 incorrect
-matches, 0 fabricated citations** (every citation returned quoted real
-source text — the two errors were wrong/missed *matches*, not made-up
-content).
-
-## Results
-
 Tested against 8 questions using the live retrieve_best_match() function:
 6 correctly matched with citation, 2 correctly abstained, 0 fabricated
 citations.
